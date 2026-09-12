@@ -7,7 +7,7 @@ import AuthGuard from "@/components/AuthGuard";
 import { supabase } from "@/lib/supabaseClient";
 import ReactMarkdown from "react-markdown";
 
-const API_URL = "http://127.0.0.1:8000/patients";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/patients`;
 
 /* ---------- types ---------- */
 
@@ -215,7 +215,7 @@ function PatientDetailContent({
     setChatLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/chat", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ patient_id: patient.id, question }),
@@ -315,7 +315,7 @@ function PatientDetailContent({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <a
-              href={`http://127.0.0.1:8000/patients/${id}/report-pdf`}
+              href={`${process.env.NEXT_PUBLIC_API_URL}/patients/${id}/report-pdf`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-lg bg-sky-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-sky-800"

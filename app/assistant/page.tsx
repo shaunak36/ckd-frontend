@@ -53,7 +53,7 @@ function AssistantContent() {
         }
 
         // Fetch user's screenings
-        const res = await fetch(`http://127.0.0.1:8000/patients?created_by=${user.id}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/patients?created_by=${user.id}`);
         if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
         
         const data: PatientRecord[] = await res.json();
@@ -102,7 +102,7 @@ function AssistantContent() {
     setChatLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/chat", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ patient_id: selectedId, question }),

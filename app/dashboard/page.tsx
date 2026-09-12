@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import { supabase } from "@/lib/supabaseClient";
 
-const API_URL = "http://127.0.0.1:8000/patients";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/patients`;
 
 /* ---------- types ---------- */
 

@@ -7,7 +7,7 @@ import AuthGuard from "@/components/AuthGuard";
 import { supabase } from "@/lib/supabaseClient";
 import { LineChart, Line, YAxis, ReferenceLine, ResponsiveContainer } from "recharts";
 
-const API_URL = "http://127.0.0.1:8000/patients";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/patients`;
 
 type PatientRecord = {
   id: string;

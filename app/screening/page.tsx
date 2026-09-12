@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import { supabase } from "@/lib/supabaseClient";
 
-const API_URL = "http://127.0.0.1:8000/predict";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/predict`;
 
 const DISCLAIMER =
   "This tool provides an educational risk estimate only. It is not a medical diagnosis. Consult a qualified healthcare professional for any health concerns.";
@@ -316,7 +316,7 @@ function ScreeningContent() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/extract-report", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/extract-report`, {
         method: "POST",
         body: formData,
       });
@@ -402,7 +402,7 @@ function ScreeningContent() {
     payload.patient_name = form.patientName || "Unnamed";
     payload.created_by = user?.id;
 
-    const endpoint = screenMode === "quick" ? "http://127.0.0.1:8000/predict-quick" : API_URL;
+    const endpoint = screenMode === "quick" ? `${process.env.NEXT_PUBLIC_API_URL}/predict-quick` : API_URL;
 
     try {
       const response = await fetch(endpoint, {

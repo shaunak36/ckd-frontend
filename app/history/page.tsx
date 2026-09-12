@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import { supabase } from "@/lib/supabaseClient";
 
-const API_URL = "http://127.0.0.1:8000/patients";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/patients`;
 
 type Patient = {
   id: string;
@@ -109,7 +109,7 @@ function HistoryContent() {
     e.stopPropagation();
     if (!window.confirm("Delete this screening? This cannot be undone.")) return;
     try {
-      const res = await fetch(`http://127.0.0.1:8000/patients/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/patients/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
       setPatients(prev => prev.filter(p => p.id !== id));
     } catch (err) {
@@ -121,7 +121,7 @@ function HistoryContent() {
     e.preventDefault();
     e.stopPropagation();
     try {
-      const res = await fetch(`http://127.0.0.1:8000/patients/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/patients/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ patient_name: editName })
