@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import ThemeToggle from "@/components/ThemeToggle";
 import { useRouter } from "next/navigation";
 import AuthGuard from "@/components/AuthGuard";
 import { supabase } from "@/lib/supabaseClient";
@@ -161,47 +163,47 @@ function ReportsContent() {
   const detailedCount = total - quickCount;
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 flex w-64 flex-col border-r border-slate-200 bg-white z-20">
+      <aside className="fixed inset-y-0 left-0 flex w-64 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-20">
         <div className="flex h-16 items-center px-6">
-          <Link href="/dashboard" className="text-xl font-bold tracking-tight text-sky-700">
-            CKD One
+          <Link href="/dashboard" className="text-xl font-bold tracking-tight text-sky-700 dark:text-sky-400">
+            <Image src="/logo.png" alt="CKD One Logo" width={120} height={50} priority className="object-contain" />
           </Link>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">
-          <Link href="/dashboard" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900">
-            <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <Link href="/dashboard" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-50">
+            <svg className="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
             </svg>
             Overview
           </Link>
-          <Link href="/screening" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900">
-            <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <Link href="/screening" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-50">
+            <svg className="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
             </svg>
             Screening
           </Link>
-          <Link href="/patients" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900">
-            <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <Link href="/patients" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-50">
+            <svg className="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
             Patients
           </Link>
-          <Link href="/reports" className="flex items-center gap-3 rounded-md bg-sky-50 px-3 py-2 text-sm font-medium text-sky-700">
+          <Link href="/reports" className="flex items-center gap-3 rounded-md bg-sky-50 dark:bg-sky-900/30 px-3 py-2 text-sm font-medium text-sky-700 dark:text-sky-400">
             <svg className="h-5 w-5 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             Reports
           </Link>
-          <Link href="/assistant" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900">
-            <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <Link href="/assistant" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-50">
+            <svg className="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
             </svg>
             AI Assistant
           </Link>
-          <Link href="/history" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900">
-            <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <Link href="/history" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-50">
+            <svg className="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             History
@@ -209,17 +211,37 @@ function ReportsContent() {
         </nav>
         
         <div className="px-3 pb-4">
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <div className="mb-2 space-y-1">
+             <Link href="/settings" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-50">
+                <svg className="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Settings
+             </Link>
+             <Link href="/help" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-50">
+                <svg className="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Help
+             </Link>
+          </div>
+
+          <div className="flex items-center justify-between px-2 pb-2">
+            <span className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">Theme</span>
+            <ThemeToggle />
+          </div>
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-3">
              <div className="flex items-center gap-3 overflow-hidden">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-700">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900/50 text-sm font-bold text-sky-700 dark:text-sky-400">
                    {initials}
                 </div>
                 <div className="flex flex-col truncate">
-                   <span className="truncate text-sm font-semibold text-slate-900">{userName || 'Doctor'}</span>
-                   <span className="truncate text-xs text-slate-500">Nephrologist</span>
+                   <span className="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">{userName || 'Doctor'}</span>
+                   <span className="truncate text-xs text-slate-500 dark:text-slate-400">Nephrologist</span>
                 </div>
              </div>
-             <button onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }} className="p-1 text-slate-400 hover:text-slate-600 transition">
+             <button onClick={async () => { await supabase.auth.signOut(); router.push("/login"); }} className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
@@ -231,12 +253,12 @@ function ReportsContent() {
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col pl-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-8">
+        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-8">
           <div className="flex flex-1 items-center gap-4">
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">Reports</h1>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Reports</h1>
           </div>
           <div className="flex items-center gap-4 ml-4">
-             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 text-xs font-bold text-sky-700">
+             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900/50 text-xs font-bold text-sky-700 dark:text-sky-400">
                 {initials}
              </div>
           </div>
@@ -245,15 +267,15 @@ function ReportsContent() {
         {/* Page Content */}
         <main className="flex-1 p-8">
            {loading ? (
-             <p className="text-sm text-slate-500">Loading reports...</p>
+             <p className="text-sm text-slate-500 dark:text-slate-400">Loading reports...</p>
            ) : error ? (
-             <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800">{error}</div>
+             <div className="rounded-2xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 p-5 text-sm text-red-800 dark:text-red-300">{error}</div>
            ) : (
              <div className="max-w-4xl">
                <div className="mb-8 flex items-center justify-between">
                  <div>
-                   <h2 className="text-2xl font-bold text-slate-900">Summary Statistics</h2>
-                   <p className="text-sm text-slate-500 mt-1">Aggregated data across all patient screenings.</p>
+                   <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">Summary Statistics</h2>
+                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Aggregated data across all patient screenings.</p>
                  </div>
                  <button 
                    onClick={handleDownloadCSV}
@@ -268,69 +290,69 @@ function ReportsContent() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Accuracy Card */}
-                  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h3 className="font-semibold text-slate-900 mb-4">Real-World Accuracy</h3>
+                  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-50 mb-4">Real-World Accuracy</h3>
                     {accuracy ? (
                       <div className="flex flex-col justify-center h-full pb-6">
                         {accuracy.total_confirmed === 0 ? (
-                          <p className="text-sm text-slate-500">No confirmed outcomes yet.</p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">No confirmed outcomes yet.</p>
                         ) : (
                           <>
-                            <div className="text-4xl font-extrabold text-sky-700 mb-2">
+                            <div className="text-4xl font-extrabold text-sky-700 dark:text-sky-400 mb-2">
                               {(accuracy.real_world_accuracy * 100).toFixed(1)}%
                             </div>
-                            <p className="text-sm font-medium text-slate-600">
+                            <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
                               {accuracy.matched} / {accuracy.total_confirmed} confirmed cases matched
                             </p>
                           </>
                         )}
                       </div>
                     ) : (
-                      <p className="text-sm text-slate-500">Loading...</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Loading...</p>
                     )}
                   </div>
 
                   {/* Risk Breakdown Card */}
-                  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h3 className="font-semibold text-slate-900 mb-4">Risk Level Breakdown</h3>
+                  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-50 mb-4">Risk Level Breakdown</h3>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-slate-600">Total Screenings</span>
-                        <span className="text-sm font-bold text-slate-900">{total}</span>
+                        <span className="text-sm text-slate-600 dark:text-slate-300">Total Screenings</span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-slate-50">{total}</span>
                       </div>
-                      <div className="h-px w-full bg-slate-100" />
+                      <div className="h-px w-full bg-slate-100 dark:bg-slate-800" />
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-red-600 flex items-center gap-2">
+                        <span className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-red-500"></span> Higher Risk
                         </span>
-                        <span className="text-sm font-semibold text-slate-900">{higherCount}</span>
+                        <span className="text-sm font-semibold text-slate-900 dark:text-slate-50">{higherCount}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-amber-600 flex items-center gap-2">
+                        <span className="text-sm text-amber-600 dark:text-amber-400 flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-amber-500"></span> Moderate Risk
                         </span>
-                        <span className="text-sm font-semibold text-slate-900">{modCount}</span>
+                        <span className="text-sm font-semibold text-slate-900 dark:text-slate-50">{modCount}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-emerald-600 flex items-center gap-2">
+                        <span className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Lower Risk
                         </span>
-                        <span className="text-sm font-semibold text-slate-900">{lowerCount}</span>
+                        <span className="text-sm font-semibold text-slate-900 dark:text-slate-50">{lowerCount}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Screen Type Card */}
-                  <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h3 className="font-semibold text-slate-900 mb-4">Screening Methods</h3>
+                  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-50 mb-4">Screening Methods</h3>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-slate-600">Quick Screen (8 values)</span>
-                        <span className="text-sm font-bold text-slate-900">{quickCount}</span>
+                        <span className="text-sm text-slate-600 dark:text-slate-300">Quick Screen (8 values)</span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-slate-50">{quickCount}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-slate-600">Detailed Screen (24 values)</span>
-                        <span className="text-sm font-bold text-slate-900">{detailedCount}</span>
+                        <span className="text-sm text-slate-600 dark:text-slate-300">Detailed Screen (24 values)</span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-slate-50">{detailedCount}</span>
                       </div>
                     </div>
                   </div>

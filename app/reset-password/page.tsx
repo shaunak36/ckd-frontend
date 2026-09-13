@@ -42,26 +42,26 @@ export default function ResetPasswordPage() {
   }
 
   const inputClass =
-    "mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200";
+    "mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 shadow-sm outline-none transition focus:border-sky-500 dark:focus:border-sky-400 focus:ring-2 focus:ring-sky-200 dark:focus:ring-sky-900/50";
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-sky-50 px-4 relative py-12">
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-sky-50 dark:bg-sky-900/30 px-4 relative py-12">
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-sm">
         <Link href="/" className="inline-block hover:opacity-80 transition">
-          <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">
+          <p className="text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-400">
             CKD One
           </p>
         </Link>
-        <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
+        <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
           Set New Password
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Please enter your new password below.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
           <label className="flex flex-col">
-            <span className="text-sm font-medium text-slate-700">New Password</span>
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">New Password</span>
             <input
               type="password"
               required
@@ -73,7 +73,7 @@ export default function ResetPasswordPage() {
           </label>
 
           <label className="flex flex-col">
-            <span className="text-sm font-medium text-slate-700">Confirm Password</span>
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Confirm Password</span>
             <input
               type="password"
               required
@@ -85,13 +85,13 @@ export default function ResetPasswordPage() {
           </label>
 
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 px-4 py-3 text-sm text-red-800 dark:text-red-300">
               {error}
             </div>
           )}
 
           {message && (
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            <div className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/30 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-300">
               {message}
             </div>
           )}
