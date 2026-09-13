@@ -76,34 +76,34 @@ export default function LoginPage() {
   }
 
   const inputClass =
-    "mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 shadow-sm outline-none transition focus:border-sky-500 dark:focus:border-sky-400 focus:ring-2 focus:ring-sky-200 dark:focus:ring-sky-900/50";
+    "mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-200";
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-sky-50 dark:bg-sky-900/30 px-4 relative py-12">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-sky-50 px-4 relative py-12">
       <div className="w-full max-w-md mb-4">
-        <Link href="/" className="inline-flex items-center text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition">
+        <Link href="/" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-800 transition">
           ← Back to home
         </Link>
       </div>
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-sm">
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <Link href="/" className="inline-block hover:opacity-80 transition">
-          <p className="text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-400">
+          <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">
             CKD One
           </p>
         </Link>
         
         {forgotPasswordMode ? (
           <>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
               Reset Password
             </h1>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-sm text-slate-500">
               Enter your email to receive a password reset link.
             </p>
 
             <form onSubmit={handleResetPassword} className="mt-6 flex flex-col gap-4">
               <label className="flex flex-col">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Email</span>
+                <span className="text-sm font-medium text-slate-700">Email</span>
                 <input
                   type="email"
                   required
@@ -115,13 +115,13 @@ export default function LoginPage() {
               </label>
 
               {error && (
-                <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 px-4 py-3 text-sm text-red-800 dark:text-red-300">
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
                   {error}
                 </div>
               )}
 
               {resetMessage && (
-                <div className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/30 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-300">
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
                   {resetMessage}
                 </div>
               )}
@@ -135,14 +135,14 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-6 text-center text-sm text-slate-500">
               <button 
                 onClick={() => {
                   setForgotPasswordMode(false);
                   setError(null);
                   setResetMessage(null);
                 }}
-                className="font-medium text-sky-700 dark:text-sky-400 hover:underline"
+                className="font-medium text-sky-700 hover:underline"
               >
                 Back to log in
               </button>
@@ -150,16 +150,16 @@ export default function LoginPage() {
           </>
         ) : (
           <>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
               Log in
             </h1>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-sm text-slate-500">
               Enter your credentials to continue.
             </p>
 
             <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
               <label className="flex flex-col">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Email</span>
+                <span className="text-sm font-medium text-slate-700">Email</span>
                 <input
                   type="email"
                   required
@@ -172,14 +172,14 @@ export default function LoginPage() {
 
               <label className="flex flex-col">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Password</span>
+                  <span className="text-sm font-medium text-slate-700">Password</span>
                   <button 
                     type="button"
                     onClick={() => {
                       setForgotPasswordMode(true);
                       setError(null);
                     }}
-                    className="text-xs font-medium text-sky-700 dark:text-sky-400 hover:underline"
+                    className="text-xs font-medium text-sky-700 hover:underline"
                   >
                     Forgot password?
                   </button>
@@ -195,7 +195,7 @@ export default function LoginPage() {
               </label>
 
               {error && (
-                <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 px-4 py-3 text-sm text-red-800 dark:text-red-300">
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
                   {error}
                 </div>
               )}
@@ -209,9 +209,9 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-6 text-center text-sm text-slate-500">
               Don&apos;t have an account?{" "}
-              <Link href="/signup" className="font-medium text-sky-700 dark:text-sky-400 hover:underline">
+              <Link href="/signup" className="font-medium text-sky-700 hover:underline">
                 Sign up
               </Link>
             </p>

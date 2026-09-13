@@ -19,10 +19,10 @@ function FactorBar({ label, level, widthClass, colorClass }: { label: string; le
   return (
     <div className="flex flex-col gap-1">
       <div className="flex justify-between text-sm">
-        <span className="font-medium text-slate-700 dark:text-slate-200">{label}</span>
-        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{level}</span>
+        <span className="font-medium text-slate-700">{label}</span>
+        <span className="text-xs font-semibold text-slate-500">{level}</span>
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
         <div className={`h-full rounded-full ${widthClass} ${colorClass}`} />
       </div>
     </div>
@@ -31,22 +31,22 @@ function FactorBar({ label, level, widthClass, colorClass }: { label: string; le
 
 function SampleResultCard({ className = "" }: { className?: string }) {
   return (
-    <div className={`flex w-full max-w-md flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xl sm:p-8 ${className}`}>
+    <div className={`flex w-full max-w-md flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-xl sm:p-8 ${className}`}>
       {/* Risk Output */}
       <div className="flex flex-col items-center gap-2 text-center">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">CKD Risk Estimate</p>
-        <p className="text-6xl font-extrabold text-red-700 dark:text-red-400">72%</p>
-        <span className="rounded-full border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 px-3 py-1 text-xs font-semibold text-red-800 dark:text-red-300">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">CKD Risk Estimate</p>
+        <p className="text-6xl font-extrabold text-red-700">72%</p>
+        <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-800">
           Higher Risk
         </span>
       </div>
 
       {/* Gauge */}
       <div className="mt-6">
-        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
           <div className="h-full w-[72%] rounded-full bg-red-500" />
         </div>
-        <div className="mt-1 flex justify-between text-xs text-slate-400 dark:text-slate-500">
+        <div className="mt-1 flex justify-between text-xs text-slate-400">
           <span>0%</span>
           <span>30%</span>
           <span>70%</span>
@@ -55,19 +55,19 @@ function SampleResultCard({ className = "" }: { className?: string }) {
       </div>
 
       {/* Confidence */}
-      <div className="mt-6 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/30 p-4">
+      <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
         <div className="flex items-center gap-2">
-          <span className="text-emerald-700 dark:text-emerald-400">
+          <span className="text-emerald-700">
             <CheckIcon className="h-4 w-4" />
           </span>
           <p className="text-sm font-semibold text-emerald-900">Explanation Confidence: Stable</p>
         </div>
-        <p className="mt-1 text-xs text-emerald-800 dark:text-emerald-300">Factors were consistent across model checks.</p>
+        <p className="mt-1 text-xs text-emerald-800">Factors were consistent across model checks.</p>
       </div>
 
       {/* Contributing Factors */}
       <div className="mt-6">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Contributing Factors</h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Contributing Factors</h3>
         <div className="mt-4 flex flex-col gap-4">
           <FactorBar label="Serum creatinine" level="Strong" widthClass="w-[90%]" colorClass="bg-red-500" />
           <FactorBar label="Blood pressure" level="Strong" widthClass="w-[75%]" colorClass="bg-red-400" />
@@ -82,24 +82,24 @@ function SampleResultCard({ className = "" }: { className?: string }) {
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-50">
+    <div className="flex min-h-screen flex-col bg-slate-50 font-sans text-slate-900">
       
       {/* Navigation */}
-      <header className="sticky top-0 z-50 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 px-6 py-4 backdrop-blur-md">
+      <header className="sticky top-0 z-50 flex items-center justify-between border-b border-slate-200 bg-white/80 px-6 py-4 backdrop-blur-md">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-700 font-bold text-white">
             C
           </div>
-          <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">CKD One</span>
+          <span className="text-lg font-bold tracking-tight text-slate-900">CKD One</span>
         </div>
         <nav className="hidden items-center gap-6 md:flex">
-          <Link href="#" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-sky-700 dark:hover:text-sky-400">Product</Link>
-          <Link href="#how-it-works" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-sky-700 dark:hover:text-sky-400">How it works</Link>
-          <Link href="#why-ckd-one" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-sky-700 dark:hover:text-sky-400">Why CKD One</Link>
-          <Link href="#for-doctors" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-sky-700 dark:hover:text-sky-400">For Doctors</Link>
+          <Link href="#" className="text-sm font-medium text-slate-600 hover:text-sky-700">Product</Link>
+          <Link href="#how-it-works" className="text-sm font-medium text-slate-600 hover:text-sky-700">How it works</Link>
+          <Link href="#why-ckd-one" className="text-sm font-medium text-slate-600 hover:text-sky-700">Why CKD One</Link>
+          <Link href="#for-doctors" className="text-sm font-medium text-slate-600 hover:text-sky-700">For Doctors</Link>
         </nav>
         <div className="flex items-center gap-4">
-          <Link href="/login" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-sky-700 dark:hover:text-sky-400">
+          <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-sky-700">
             Sign In
           </Link>
           <Link href="/signup" className="hidden rounded-lg bg-sky-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800 sm:inline-flex">
@@ -110,28 +110,28 @@ export default function LandingPage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-sky-50 dark:bg-sky-900/30 px-6 py-16 md:py-24 lg:px-8 lg:py-32">
+        <section className="relative overflow-hidden bg-sky-50 px-6 py-16 md:py-24 lg:px-8 lg:py-32">
           <div className="mx-auto max-w-7xl">
             <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-8">
               <div className="flex max-w-2xl flex-col items-start text-left">
-                <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-100 dark:bg-sky-900/50 px-3 py-1 text-xs font-semibold text-sky-800">
+                <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-800">
                   AI-powered kidney health screening
                 </span>
-                <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50 sm:text-6xl">
-                  Understand Your <span className="text-sky-700 dark:text-sky-400">Kidney Health</span> Earlier.
+                <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-6xl">
+                  Understand Your <span className="text-sky-700">Kidney Health</span> Earlier.
                 </h1>
-                <p className="mt-6 text-lg leading-8 text-slate-600 dark:text-slate-300">
+                <p className="mt-6 text-lg leading-8 text-slate-600">
                   CKD One uses explainable machine learning to estimate chronic kidney disease risk from clinical and laboratory data — and shows you the factors behind the result.
                 </p>
                 <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
                   <Link href="/signup" className="rounded-lg bg-sky-700 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800">
                     Check CKD Risk →
                   </Link>
-                  <Link href="#how-it-works" className="text-sm font-semibold text-sky-700 dark:text-sky-400 hover:underline">
+                  <Link href="#how-it-works" className="text-sm font-semibold text-sky-700 hover:underline">
                     See How It Works
                   </Link>
                 </div>
-                <p className="mt-6 text-xs text-slate-500 dark:text-slate-400 sm:max-w-md">
+                <p className="mt-6 text-xs text-slate-500 sm:max-w-md">
                   CKD One provides risk screening and educational information. It does not replace diagnosis or medical advice from a qualified healthcare professional.
                 </p>
               </div>
@@ -147,11 +147,11 @@ export default function LandingPage() {
         </section>
 
         {/* CKD can develop silently section */}
-        <section id="why-ckd-one" className="bg-white dark:bg-slate-900 px-6 py-20 lg:px-8 lg:py-24">
+        <section id="why-ckd-one" className="bg-white px-6 py-20 lg:px-8 lg:py-24">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50 sm:text-4xl">CKD can develop silently</h2>
-              <p className="mt-4 text-lg text-slate-600 dark:text-slate-300">
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">CKD can develop silently</h2>
+              <p className="mt-4 text-lg text-slate-600">
                 Millions of people have chronic kidney disease and don't know it. We built CKD One to bring clarity to early screening and detection.
               </p>
             </div>
@@ -162,9 +162,9 @@ export default function LandingPage() {
                 { title: "Black-box AI is hard to trust", desc: "Many risk models provide a score without context, leaving patients and doctors unsure of why a prediction was made." },
                 { title: "Decisions need understandable explanations", desc: "We provide not just a risk percentage, but a clear, ranked list of the exact clinical factors driving your result." }
               ].map((card, i) => (
-                <div key={i} className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-6 shadow-sm">
-                  <h3 className="font-semibold text-slate-900 dark:text-slate-50">{card.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{card.desc}</p>
+                <div key={i} className="rounded-2xl border border-slate-100 bg-slate-50 p-6 shadow-sm">
+                  <h3 className="font-semibold text-slate-900">{card.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{card.desc}</p>
                 </div>
               ))}
             </div>
@@ -172,10 +172,10 @@ export default function LandingPage() {
         </section>
 
         {/* How CKD One Works */}
-        <section id="how-it-works" className="bg-slate-50 dark:bg-slate-950 px-6 py-20 lg:px-8 lg:py-24 border-y border-slate-200 dark:border-slate-800">
+        <section id="how-it-works" className="bg-slate-50 px-6 py-20 lg:px-8 lg:py-24 border-y border-slate-200">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50 sm:text-4xl">How CKD One works</h2>
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">How CKD One works</h2>
             </div>
             <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-4">
               {[
@@ -185,11 +185,11 @@ export default function LandingPage() {
                 { num: "04", title: "Understand your risk", desc: "Receive a transparent estimate with top contributing factors." }
               ].map((step, i) => (
                 <div key={i} className="relative flex flex-col items-center text-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900/50 text-lg font-bold text-sky-700 dark:text-sky-400">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-sky-100 text-lg font-bold text-sky-700">
                     {step.num}
                   </div>
-                  <h3 className="mt-6 font-semibold text-slate-900 dark:text-slate-50">{step.title}</h3>
-                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{step.desc}</p>
+                  <h3 className="mt-6 font-semibold text-slate-900">{step.title}</h3>
+                  <p className="mt-2 text-sm text-slate-600">{step.desc}</p>
                 </div>
               ))}
             </div>
@@ -204,7 +204,7 @@ export default function LandingPage() {
                 <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
                   Don't just get a prediction.<br/>Understand it.
                 </h2>
-                <p className="mt-6 text-lg text-slate-400 dark:text-slate-500">
+                <p className="mt-6 text-lg text-slate-400">
                   Trust in AI comes from transparency. CKD One doesn't just give you a number. It gives you the "why".
                 </p>
                 <ul className="mt-8 flex flex-col gap-5 text-slate-300">
@@ -231,12 +231,12 @@ export default function LandingPage() {
         </section>
 
         {/* For healthcare professionals */}
-        <section id="for-doctors" className="bg-sky-50 dark:bg-sky-900/30 px-6 py-20 lg:px-8 lg:py-24">
+        <section id="for-doctors" className="bg-sky-50 px-6 py-20 lg:px-8 lg:py-24">
           <div className="mx-auto max-w-7xl">
             <div className="grid items-center gap-12 lg:grid-cols-2">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-400">For healthcare professionals</p>
-                <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50 sm:text-4xl">
+                <p className="text-sm font-semibold uppercase tracking-wide text-sky-700">For healthcare professionals</p>
+                <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
                   Designed to support informed clinical conversations.
                 </h2>
                 <div className="mt-10">
@@ -254,9 +254,9 @@ export default function LandingPage() {
                   "Structured patient information",
                   "Clear risk visualization"
                 ].map((feature, i) => (
-                  <div key={i} className="flex items-start gap-3 rounded-xl bg-white dark:bg-slate-900 p-4 shadow-sm border border-slate-200 dark:border-slate-800">
-                    <CheckIcon className="h-5 w-5 shrink-0 text-sky-600 dark:text-sky-400" />
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{feature}</span>
+                  <div key={i} className="flex items-start gap-3 rounded-xl bg-white p-4 shadow-sm border border-slate-200">
+                    <CheckIcon className="h-5 w-5 shrink-0 text-sky-600" />
+                    <span className="text-sm font-medium text-slate-700">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -265,9 +265,9 @@ export default function LandingPage() {
         </section>
 
         {/* Transparent by design */}
-        <section className="bg-white dark:bg-slate-900 px-6 py-20 lg:px-8 lg:py-24 border-y border-slate-200 dark:border-slate-800">
+        <section className="bg-white px-6 py-20 lg:px-8 lg:py-24 border-y border-slate-200">
           <div className="mx-auto max-w-7xl">
-            <h2 className="text-center text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Transparent by design</h2>
+            <h2 className="text-center text-3xl font-bold tracking-tight text-slate-900">Transparent by design</h2>
             <div className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {[
                 { title: "Explainable predictions", desc: "Local feature importance tells you exactly what drove the model's estimate." },
@@ -277,9 +277,9 @@ export default function LandingPage() {
                 { title: "Patient-controlled information", desc: "You control who has access to your risk screening dashboard." },
                 { title: "Transparent workflow", desc: "Every step from data input to risk output is clearly mapped out." }
               ].map((item, i) => (
-                <div key={i} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-6">
-                  <h3 className="font-semibold text-slate-900 dark:text-slate-50">{item.title}</h3>
-                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{item.desc}</p>
+                <div key={i} className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                  <h3 className="font-semibold text-slate-900">{item.title}</h3>
+                  <p className="mt-2 text-sm text-slate-600">{item.desc}</p>
                 </div>
               ))}
             </div>
@@ -287,9 +287,9 @@ export default function LandingPage() {
         </section>
 
         {/* FAQ Section */}
-        <section className="bg-slate-50 dark:bg-slate-950 px-6 py-20 lg:px-8 lg:py-24">
+        <section className="bg-slate-50 px-6 py-20 lg:px-8 lg:py-24">
           <div className="mx-auto max-w-3xl">
-            <h2 className="text-center text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Frequently Asked Questions</h2>
+            <h2 className="text-center text-3xl font-bold tracking-tight text-slate-900">Frequently Asked Questions</h2>
             <div className="mt-12">
               <FaqAccordion />
             </div>
@@ -297,17 +297,17 @@ export default function LandingPage() {
         </section>
 
         {/* Final CTA */}
-        <section className="bg-white dark:bg-slate-900 px-6 py-24 text-center lg:px-8 lg:py-32">
+        <section className="bg-white px-6 py-24 text-center lg:px-8 lg:py-32">
           <div className="mx-auto max-w-2xl">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50 sm:text-5xl">Start understanding your kidney health.</h2>
-            <p className="mt-6 text-lg text-slate-600 dark:text-slate-300">
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl">Start understanding your kidney health.</h2>
+            <p className="mt-6 text-lg text-slate-600">
               Create a free account today to start screening and track your estimated risk over time.
             </p>
             <div className="mt-10 flex items-center justify-center gap-4">
               <Link href="/signup" className="rounded-lg bg-sky-700 px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800">
                 Get Started — Free
               </Link>
-              <Link href="/login" className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-sky-700 dark:hover:text-sky-400">
+              <Link href="/login" className="text-sm font-semibold text-slate-600 hover:text-sky-700">
                 Sign In
               </Link>
             </div>
@@ -316,7 +316,7 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-6 py-12 lg:px-8">
+      <footer className="border-t border-slate-200 bg-slate-50 px-6 py-12 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-5 lg:gap-12">
             <div className="lg:col-span-2">
@@ -324,44 +324,44 @@ export default function LandingPage() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-700 font-bold text-white">
                   C
                 </div>
-                <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">CKD One</span>
+                <span className="text-lg font-bold tracking-tight text-slate-900">CKD One</span>
               </div>
-              <p className="mt-4 text-sm text-slate-500 dark:text-slate-400 max-w-sm">
+              <p className="mt-4 text-sm text-slate-500 max-w-sm">
                 Explainable AI for chronic kidney disease screening and educational awareness.
               </p>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50">Product</h3>
-              <ul className="mt-4 flex flex-col gap-2 text-sm text-slate-500 dark:text-slate-400">
-                <li><Link href="#" className="hover:text-sky-700 dark:hover:text-sky-400">Screening Tool</Link></li>
-                <li><Link href="#" className="hover:text-sky-700 dark:hover:text-sky-400">How it works</Link></li>
-                <li><Link href="#" className="hover:text-sky-700 dark:hover:text-sky-400">Pricing</Link></li>
-                <li><Link href="#" className="hover:text-sky-700 dark:hover:text-sky-400">For Professionals</Link></li>
+              <h3 className="text-sm font-semibold text-slate-900">Product</h3>
+              <ul className="mt-4 flex flex-col gap-2 text-sm text-slate-500">
+                <li><Link href="#" className="hover:text-sky-700">Screening Tool</Link></li>
+                <li><Link href="#" className="hover:text-sky-700">How it works</Link></li>
+                <li><Link href="#" className="hover:text-sky-700">Pricing</Link></li>
+                <li><Link href="#" className="hover:text-sky-700">For Professionals</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50">Resources</h3>
-              <ul className="mt-4 flex flex-col gap-2 text-sm text-slate-500 dark:text-slate-400">
-                <li><Link href="#" className="hover:text-sky-700 dark:hover:text-sky-400">Help Center</Link></li>
-                <li><Link href="#" className="hover:text-sky-700 dark:hover:text-sky-400">Research & Models</Link></li>
-                <li><Link href="#" className="hover:text-sky-700 dark:hover:text-sky-400">Clinical Guidelines</Link></li>
+              <h3 className="text-sm font-semibold text-slate-900">Resources</h3>
+              <ul className="mt-4 flex flex-col gap-2 text-sm text-slate-500">
+                <li><Link href="#" className="hover:text-sky-700">Help Center</Link></li>
+                <li><Link href="#" className="hover:text-sky-700">Research & Models</Link></li>
+                <li><Link href="#" className="hover:text-sky-700">Clinical Guidelines</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50">Legal</h3>
-              <ul className="mt-4 flex flex-col gap-2 text-sm text-slate-500 dark:text-slate-400">
-                <li><Link href="#" className="hover:text-sky-700 dark:hover:text-sky-400">Privacy Policy</Link></li>
-                <li><Link href="#" className="hover:text-sky-700 dark:hover:text-sky-400">Terms of Service</Link></li>
-                <li><Link href="#" className="hover:text-sky-700 dark:hover:text-sky-400">Cookie Policy</Link></li>
+              <h3 className="text-sm font-semibold text-slate-900">Legal</h3>
+              <ul className="mt-4 flex flex-col gap-2 text-sm text-slate-500">
+                <li><Link href="#" className="hover:text-sky-700">Privacy Policy</Link></li>
+                <li><Link href="#" className="hover:text-sky-700">Terms of Service</Link></li>
+                <li><Link href="#" className="hover:text-sky-700">Cookie Policy</Link></li>
               </ul>
             </div>
           </div>
-          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200 dark:border-slate-800 pt-8 sm:flex-row">
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-8 sm:flex-row">
+            <p className="text-xs text-slate-500">
               © {new Date().getFullYear()} CKD One. All rights reserved.
             </p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 max-w-xl text-center sm:text-right">
-              <strong className="font-semibold text-slate-500 dark:text-slate-400">Medical Disclaimer:</strong> CKD One is a screening and educational platform and is not a substitute for professional medical diagnosis or treatment.
+            <p className="text-xs text-slate-400 max-w-xl text-center sm:text-right">
+              <strong className="font-semibold text-slate-500">Medical Disclaimer:</strong> CKD One is a screening and educational platform and is not a substitute for professional medical diagnosis or treatment.
             </p>
           </div>
         </div>
