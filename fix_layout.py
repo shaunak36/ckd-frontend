@@ -1,39 +1,12 @@
-﻿import re
+﻿import os
 
-with open('app/layout.tsx', 'r', encoding='utf-8') as f:
+filepath = 'app/[locale]/layout.tsx'
+with open(filepath, 'r', encoding='utf-8') as f:
     content = f.read()
 
-# Replace the broken script tag block with the correct one
-broken = """<head>\\n        <script
-          dangerouslySetInnerHTML={{
-            __html: 
-              try {
-                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                  document.documentElement.classList.add('dark')
-                } else {
-                  document.documentElement.classList.remove('dark')
-                }
-              } catch (_) {}
-            ,
-          }}
-        />"""
+# Replace \ try { ... } catch (_) {} \ with  try { ... } catch (_) {} 
+import re
+content = re.sub(r'__html: \\\s*(try \{.*?catch \(\_\) \{\})\s*\\,', r'__html: \n                \1\n              ,', content, flags=re.DOTALL)
 
-fixed = """<head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: 
-              try {
-                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                  document.documentElement.classList.add('dark')
-                } else {
-                  document.documentElement.classList.remove('dark')
-                }
-              } catch (_) {}
-            ,
-          }}
-        />"""
-
-content = content.replace(broken, fixed)
-
-with open('app/layout.tsx', 'w', encoding='utf-8') as f:
+with open(filepath, 'w', encoding='utf-8') as f:
     f.write(content)
