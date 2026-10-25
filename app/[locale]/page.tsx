@@ -1,9 +1,7 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "@/i18n/routing";
-import Image from "next/image";
 import FaqAccordion from "@/components/FaqAccordion";
-import { ReactNode } from "react";
 
 /* --- Components --- */
 
@@ -29,22 +27,137 @@ function FactorBar({ label, level, widthClass, colorClass }: { label: string; le
   );
 }
 
-function SampleResultCard({ className = "" }: { className?: string }) {
+type PatientFeatures = {
+  age: string;
+  bp: string;
+  sg: string;
+  al: string;
+  su: string;
+  rbc: string;
+  pc: string;
+  pcc: string;
+  ba: string;
+  bgr: string;
+  bu: string;
+  sc: string;
+  sod: string;
+  pot: string;
+  hemo: string;
+  pcv: string;
+  wbcc: string;
+  rbcc: string;
+  htn: string;
+  dm: string;
+  cad: string;
+  appet: string;
+  pe: string;
+  ane: string;
+};
+
+type FeatureKey = keyof PatientFeatures;
+
+type PredictResponse = {
+  risk_percentage: string;
+  top_factors: {
+    feature: string;
+    direction: string;
+  }[];
+};
+
+const FEATURE_FIELDS = [
+  ["age", "Age"],
+  ["bp", "Blood pressure"],
+  ["sg", "Specific gravity"],
+  ["al", "Albumin"],
+  ["su", "Sugar"],
+  ["rbc", "Red blood cells"],
+  ["pc", "Pus cells"],
+  ["pcc", "Pus cell clumps"],
+  ["ba", "Bacteria"],
+  ["bgr", "Blood glucose"],
+  ["bu", "Blood urea"],
+  ["sc", "Serum creatinine"],
+  ["sod", "Sodium"],
+  ["pot", "Potassium"],
+  ["hemo", "Hemoglobin"],
+  ["pcv", "Packed cell volume"],
+  ["wbcc", "White blood cell count"],
+  ["rbcc", "Red blood cell count"],
+  ["htn", "Hypertension"],
+  ["dm", "Diabetes mellitus"],
+  ["cad", "Coronary artery disease"],
+  ["appet", "Appetite"],
+  ["pe", "Pedal edema"],
+  ["ane", "Anemia"],
+] as const satisfies readonly (readonly [FeatureKey, string])[];
+
+const NUMERIC_FIELDS = new Set<FeatureKey>([
+  "age", "bp", "sg", "al", "su", "bgr", "bu", "sc",
+  "sod", "pot", "hemo", "pcv", "wbcc", "rbcc",
+]);
+
+const CATEGORICAL_OPTIONS: Record<FeatureKey, readonly string[] | undefined> = {
+  age: undefined,
+  bp: undefined,
+  sg: undefined,
+  al: undefined,
+  su: undefined,
+  rbc: ["normal", "abnormal"],
+  pc: ["normal", "abnormal"],
+  pcc: ["present", "notpresent"],
+  ba: ["present", "notpresent"],
+  bgr: undefined,
+  bu: undefined,
+  sc: undefined,
+  sod: undefined,
+  pot: undefined,
+  hemo: undefined,
+  pcv: undefined,
+  wbcc: undefined,
+  rbcc: undefined,
+  htn: ["yes", "no"],
+  dm: ["yes", "no"],
+  cad: ["yes", "no"],
+  appet: ["good", "poor"],
+  pe: ["yes", "no"],
+  ane: ["yes", "no"],
+};
+
+const INITIAL_FEATURES: PatientFeatures = {
+  age: "", bp: "", sg: "", al: "", su: "", rbc: "", pc: "", pcc: "",
+  ba: "", bgr: "", bu: "", sc: "", sod: "", pot: "", hemo: "", pcv: "",
+  wbcc: "", rbcc: "", htn: "", dm: "", cad: "", appet: "", pe: "", ane: "",
+};
+
+function SampleResultCard({
+  result,
+  className = "",
+}: {
+  result: PredictResponse | null;
+  className?: string;
+}) {
+  const risk = result?.risk_percentage;
+  const numericRisk = risk ? Number.parseFloat(risk.replace("%", "")) : 0;
+
   return (
     <div className={`flex w-full max-w-md flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-xl sm:p-8 ${className}`}>
       {/* Risk Output */}
       <div className="flex flex-col items-center gap-2 text-center">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">CKD Risk Estimate</p>
-        <p className="text-6xl font-extrabold text-red-700">72%</p>
-        <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-800">
-          Higher Risk
-        </span>
+        {result ? (
+          <p className="text-6xl font-extrabold text-red-700">{risk}</p>
+        ) : (
+          <p className="text-sm font-semibold text-slate-500">Illustrative sample, not model output</p>
+        )}
       </div>
 
       {/* Gauge */}
       <div className="mt-6">
         <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-          <div className="h-full w-[72%] rounded-full bg-red-500" />
+          <div
+            className="h-full rounded-full bg-red-500"
+            style={{ width: `${result && Number.isFinite(numericRisk) ? Math.min(Math.max(numericRisk, 0), 100) : 0}%` }}
+          />
         </div>
         <div className="mt-1 flex justify-between text-xs text-slate-400">
           <span>0%</span>
@@ -60,18 +173,25 @@ function SampleResultCard({ className = "" }: { className?: string }) {
           <span className="text-emerald-700">
             <CheckIcon className="h-4 w-4" />
           </span>
-          <p className="text-sm font-semibold text-emerald-900">Explanation Confidence: Stable</p>
+          <p className="text-sm font-semibold text-emerald-900">Per-patient confidence estimate</p>
         </div>
-        <p className="mt-1 text-xs text-emerald-800">Factors were consistent across model checks.</p>
       </div>
 
       {/* Contributing Factors */}
       <div className="mt-6">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Contributing Factors</h3>
         <div className="mt-4 flex flex-col gap-4">
-          <FactorBar label="Serum creatinine" level="Strong" widthClass="w-[90%]" colorClass="bg-red-500" />
-          <FactorBar label="Blood pressure" level="Strong" widthClass="w-[75%]" colorClass="bg-red-400" />
-          <FactorBar label="Specific gravity" level="Moderate" widthClass="w-[45%]" colorClass="bg-amber-400" />
+          {result ? result.top_factors.map((factor) => (
+            <FactorBar
+              key={factor.feature}
+              label={factor.feature}
+              level={factor.direction}
+              widthClass="w-full"
+              colorClass="bg-sky-500"
+            />
+          )) : (
+            <p className="text-sm text-slate-500">Submit patient features to see model factors.</p>
+          )}
         </div>
       </div>
     </div>
@@ -81,6 +201,55 @@ function SampleResultCard({ className = "" }: { className?: string }) {
 /* --- Main Page --- */
 
 export default function LandingPage() {
+  const [features, setFeatures] = useState<PatientFeatures>(INITIAL_FEATURES);
+  const [result, setResult] = useState<PredictResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handlePredict(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+
+    const hasInvalidField = FEATURE_FIELDS.some(([key]) => {
+      const value = features[key].trim();
+      return !value || (NUMERIC_FIELDS.has(key) && !Number.isFinite(Number(value)));
+    });
+
+    if (hasInvalidField) {
+      setResult(null);
+      setError("Please fill in all fields");
+      return;
+    }
+
+    const body = Object.fromEntries(
+      FEATURE_FIELDS.map(([key]) => [
+        key,
+        NUMERIC_FIELDS.has(key) ? Number(features[key]) : features[key],
+      ]),
+    );
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/predict`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Prediction request failed (${response.status})`);
+      }
+
+      setResult((await response.json()) as PredictResponse);
+    } catch (requestError) {
+      setResult(null);
+      setError(requestError instanceof Error ? requestError.message : "Unable to reach the prediction service");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 font-sans text-slate-900">
       
@@ -134,12 +303,61 @@ export default function LandingPage() {
                 <p className="mt-6 text-xs text-slate-500 sm:max-w-md">
                   CKD One provides risk screening and educational information. It does not replace diagnosis or medical advice from a qualified healthcare professional.
                 </p>
+                <form onSubmit={handlePredict} className="mt-8 w-full max-w-2xl rounded-2xl border border-sky-200 bg-white p-5 shadow-sm">
+                  <h2 className="text-lg font-bold text-slate-900">Try a patient risk estimate</h2>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Enter all clinical features required by the prediction model.
+                  </p>
+                  <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    {FEATURE_FIELDS.map(([key, label]) => {
+                      const options = CATEGORICAL_OPTIONS[key];
+
+                      return (
+                        <label key={key} className="flex flex-col gap-1 text-sm font-medium text-slate-700">
+                          {label}
+                          {options ? (
+                            <select
+                              value={features[key]}
+                              onChange={(event) => setFeatures((current) => ({ ...current, [key]: event.target.value }))}
+                              className="rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
+                            >
+                              <option value="">Select</option>
+                              {options.map((option) => (
+                                <option key={option} value={option}>{option}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              value={features[key]}
+                              onChange={(event) => setFeatures((current) => ({ ...current, [key]: event.target.value }))}
+                              className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+                            />
+                          )}
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="mt-5 rounded-lg bg-sky-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {loading ? "Loading..." : "Get live prediction"}
+                  </button>
+                  {error && (
+                    <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+                      {error}
+                    </p>
+                  )}
+                </form>
               </div>
               <div className="flex justify-center lg:justify-end">
                 <div className="relative">
                   {/* Decorative blob behind card */}
                   <div className="absolute -inset-4 rounded-full bg-sky-200/50 blur-3xl" />
-                  <SampleResultCard className="relative z-10" />
+                  <SampleResultCard result={result} className="relative z-10" />
                 </div>
               </div>
             </div>
@@ -224,7 +442,7 @@ export default function LandingPage() {
                 </ul>
               </div>
               <div className="flex justify-center lg:justify-end">
-                <SampleResultCard />
+                <SampleResultCard result={result} />
               </div>
             </div>
           </div>

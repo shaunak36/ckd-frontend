@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
@@ -9,7 +9,7 @@ import { useRouter } from "@/i18n/routing";
 import AuthGuard from "@/components/AuthGuard";
 import { supabase } from "@/lib/supabaseClient";
 import ReactMarkdown from "react-markdown";
-import FactorsExplainer, { type HistoryPoint } from "@/components/FactorsExplainer";
+import FactorsExplainer from "@/components/FactorsExplainer";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/patients`;
 
@@ -91,16 +91,6 @@ const INPUT_SECTIONS: { title: string; fields: { key: string; label: string; uni
   },
 ];
 
-const FEATURE_LABELS: Record<string, string> = {
-  age: "Age", bp: "Blood pressure", sg: "Specific gravity", al: "Albumin",
-  su: "Sugar", rbc: "Red blood cells", pc: "Pus cells", pcc: "Pus cell clumps",
-  ba: "Bacteria", bgr: "Blood glucose (random)", bu: "Blood urea",
-  sc: "Serum creatinine", sod: "Sodium", pot: "Potassium", hemo: "Hemoglobin",
-  pcv: "Packed cell volume", wbcc: "White blood cell count",
-  rbcc: "Red blood cell count", htn: "Hypertension", dm: "Diabetes mellitus",
-  cad: "Coronary artery disease", appet: "Appetite", pe: "Pedal edema", ane: "Anemia",
-};
-
 /* ---------- helpers (same logic as main page) ---------- */
 
 function parseRiskPercent(p: PatientRecord): number {
@@ -120,6 +110,7 @@ function riskBand(percent: number) {
       textClass: "text-emerald-700",
     };
   }
+
   if (percent <= 70) {
     return {
       label: "Moderate estimated risk",
@@ -136,34 +127,10 @@ function riskBand(percent: number) {
   };
 }
 
-function trustStyles(stability: string) {
-  if (stability === "stable") {
-    return {
-      label: "Stable — this result is consistent",
-      badgeClass: "bg-emerald-50 text-emerald-800 border-emerald-200",
-      icon: "✓",
-    };
-  }
-  if (stability === "borderline") {
-    return {
-      label: "Borderline — interpret with some caution",
-      badgeClass: "bg-amber-50 text-amber-900 border-amber-200",
-      icon: "!",
-    };
-  }
-  return {
-    label: "Unstable — recommend retesting or clinical follow-up",
-    badgeClass: "bg-red-50 text-red-800 border-red-300",
-    icon: "⚠",
-  };
-}
-
-function factorSentence(factor: TopFactor): string {
-  const name = FEATURE_LABELS[factor.feature] ?? factor.feature;
-  const direction = factor.direction.toLowerCase();
-  if (direction.includes("increase")) return `${name} is increasing the risk`;
-  if (direction.includes("decrease")) return `${name} is decreasing the risk`;
-  return `${name} has little effect on this estimate`;
+function riskGuidance(percent: number) {
+  if (percent < 30) return "Your risk is low. This is a screening tool, not a diagnosis, so a routine check with your doctor is still a good idea.";
+  if (percent <= 70) return "Your risk is moderate. Please get a proper lab test and discuss it with your doctor.";
+  return "Your risk is high. Please see a doctor soon for confirmation.";
 }
 
 function formatDate(iso: string): string {
@@ -197,7 +164,6 @@ function PatientDetailContent({
   const { id } = use(params);
 
   const [patient, setPatient] = useState<PatientRecord | null>(null);
-  const [historyPoints, setHistoryPoints] = useState<HistoryPoint[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
@@ -207,16 +173,25 @@ function PatientDetailContent({
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
+  const chatInputRef = useRef<HTMLInputElement>(null);
+  const chatPanelRef = useRef<HTMLDivElement>(null);
 
   const { userProfile } = useUser();
   const userName = userProfile?.full_name || "";
   const userRole = userProfile?.role || null;
 
-  async function handleSendChat(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!chatInput.trim() || chatLoading || !patient) return;
+  function scrollToChat() {
+    chatPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(() => chatInputRef.current?.focus(), 100);
+  }
 
-    const question = chatInput.trim();
+  async function sendChatQuestion(question: string) {
+    if (!question || !patient) return;
+    if (chatLoading || messages.some((message) => message.role === "user" && message.text === question)) {
+      scrollToChat();
+      return;
+    }
+
     setChatInput("");
     setChatError(null);
     setMessages((prev) => [...prev, { role: "user", text: question }]);
@@ -240,6 +215,18 @@ function PatientDetailContent({
       setChatError("Failed to send message. Please try again.");
     } finally {
       setChatLoading(false);
+    }
+  }
+
+  async function handleSendChat(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    await sendChatQuestion(chatInput.trim());
+  }
+
+  function handleAskWhy() {
+    scrollToChat();
+    if (patient && messages.length === 0) {
+      void sendChatQuestion(`Why is my risk ${parseRiskPercent(patient).toFixed(1)}%?`);
     }
   }
 
@@ -279,16 +266,6 @@ function PatientDetailContent({
             setPatient(match);
             if (match.outcome_notes) setOutcomeNotes(match.outcome_notes);
 
-            // Build trend history: all assessments for the same patient_name,
-            // sorted oldest→newest. Uses the existing /patients endpoint (no new API needed).
-            // FactorsExplainer hides the trend chart when fewer than 2 points are present.
-            if (match.patient_name) {
-              const samePatient = data
-                .filter(p => p.patient_name === match.patient_name)
-                .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-                .map(p => ({ date: p.created_at, risk_score: p.risk_score }));
-              setHistoryPoints(samePatient.length >= 2 ? samePatient : null);
-            }
           } else {
             setNotFound(true);
           }
@@ -508,8 +485,6 @@ function PatientDetailContent({
         {patient && (() => {
           const percent = parseRiskPercent(patient);
           const band = riskBand(percent);
-          const trust = trustStyles(patient.trust_stability);
-
           return (
             <>
               {/* patient name & date */}
@@ -526,21 +501,6 @@ function PatientDetailContent({
 
               {/* risk result card — mirrors main page layout */}
               <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
-                {patient.patient_summary && (
-                  <div className="mb-6 rounded-xl border border-sky-100 bg-sky-50/50 p-5 shadow-sm">
-                    <div className="flex gap-4">
-                      <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400">
-                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <p className="text-[15px] font-medium text-slate-700 dark:text-slate-200 leading-relaxed">
-                        {patient.patient_summary}
-                      </p>
-                    </div>
-                  </div>
-                )}
-                
                 {/* large percentage */}
                 <div className="flex flex-col items-center gap-2 text-center">
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -552,7 +512,14 @@ function PatientDetailContent({
                   <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${band.badgeClass}`}>
                     {band.label}
                   </span>
+                  <p className="max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">{riskGuidance(percent)}</p>
                 </div>
+
+                {patient.patient_summary && (
+                  <div className="mt-6 rounded-xl border border-sky-100 bg-sky-50/50 p-5 shadow-sm dark:border-sky-900 dark:bg-sky-950/20">
+                    <p className="text-[15px] font-medium leading-relaxed text-slate-700 dark:text-slate-200">{patient.patient_summary}</p>
+                  </div>
+                )}
 
                 {/* progress bar */}
                 <div className="mt-6">
@@ -585,8 +552,7 @@ function PatientDetailContent({
                   boundaryNear={!!patient.boundary_near}
                   boundaryMessage={patient.boundary_message}
                   isDoctor={userRole === "doctor"}
-                  history={historyPoints}
-                  patientName={patient.patient_name}
+                  onAskWhy={handleAskWhy}
                 />
               </div>
 
@@ -675,7 +641,7 @@ function PatientDetailContent({
               </div>
 
               {/* Chat Panel */}
-              <div className="mt-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
+              <div ref={chatPanelRef} id="ask-chat-panel" className="mt-6 scroll-mt-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">Ask about this result</h2>
                 <div className="mt-4 flex h-80 flex-col gap-3 overflow-y-auto rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4">
                   {messages.length === 0 ? (
@@ -711,6 +677,7 @@ function PatientDetailContent({
 
                 <form onSubmit={handleSendChat} className="mt-4 flex gap-2">
                   <input
+                    ref={chatInputRef}
                     type="text"
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}

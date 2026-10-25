@@ -9,6 +9,7 @@ import { useRouter } from "@/i18n/routing";
 import AuthGuard from "@/components/AuthGuard";
 import { supabase } from "@/lib/supabaseClient";
 import { ScreeningOverlay, UploadLoader } from "@/components/ScreeningLoader";
+import FactorsExplainer from "@/components/FactorsExplainer";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/predict`;
 
@@ -56,16 +57,6 @@ type FieldDef = {
   type: "number" | "select";
   options?: { value: string; label: string }[];
   step?: string;
-};
-
-const FEATURE_LABELS: Record<string, string> = {
-  age: "Age", bp: "Blood pressure", sg: "Specific gravity", al: "Albumin",
-  su: "Sugar", rbc: "Red blood cells", pc: "Pus cells", pcc: "Pus cell clumps",
-  ba: "Bacteria", bgr: "Blood glucose (random)", bu: "Blood urea",
-  sc: "Serum creatinine", sod: "Sodium", pot: "Potassium", hemo: "Hemoglobin",
-  pcv: "Packed cell volume", wbcc: "White blood cell count",
-  rbcc: "Red blood cell count", htn: "Hypertension", dm: "Diabetes mellitus",
-  cad: "Coronary artery disease", appet: "Appetite", pe: "Pedal edema", ane: "Anemia",
 };
 
 const NORMAL_ABNORMAL = [
@@ -156,6 +147,7 @@ function riskBand(percent: number) {
       textClass: "text-emerald-700",
     };
   }
+
   if (percent <= 70) {
     return {
       label: "Moderate estimated risk",
@@ -172,34 +164,10 @@ function riskBand(percent: number) {
   };
 }
 
-function trustStyles(stability: string) {
-  if (stability === "stable") {
-    return {
-      label: "Stable — this result is consistent",
-      badgeClass: "bg-emerald-50 text-emerald-800 border-emerald-200",
-      icon: "✓",
-    };
-  }
-  if (stability === "borderline") {
-    return {
-      label: "Borderline — interpret with some caution",
-      badgeClass: "bg-amber-50 text-amber-900 border-amber-200",
-      icon: "!",
-    };
-  }
-  return {
-    label: "Unstable — recommend retesting or clinical follow-up",
-    badgeClass: "bg-red-50 text-red-800 border-red-300",
-    icon: "⚠",
-  };
-}
-
-function factorSentence(factor: TopFactor): string {
-  const name = FEATURE_LABELS[factor.feature] ?? factor.feature;
-  const direction = factor.direction.toLowerCase();
-  if (direction.includes("increase")) return `${name} is increasing your risk`;
-  if (direction.includes("decrease")) return `${name} is decreasing your risk`;
-  return `${name} has little effect on this estimate`;
+function riskGuidance(percent: number) {
+  if (percent < 30) return "Your risk is low. This is a screening tool, not a diagnosis, so a routine check with your doctor is still a good idea.";
+  if (percent <= 70) return "Your risk is moderate. Please get a proper lab test and discuss it with your doctor.";
+  return "Your risk is high. Please see a doctor soon for confirmation.";
 }
 
 function DisclaimerBanner() {
@@ -419,8 +387,6 @@ function ScreeningContent() {
 
   const percent = result ? parseRiskPercent(result) : 0;
   const band = result ? riskBand(percent) : null;
-  const trust = result ? trustStyles(result.trust.stability) : null;
-
   
   const initials = userName 
     ? userName.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase() 
@@ -734,23 +700,8 @@ function ScreeningContent() {
           </div>
         ) : null}
 
-        {result && band && trust ? (
+        {result && band ? (
           <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
-            {result.patient_summary && (
-              <div className="mb-6 rounded-xl border border-sky-100 bg-sky-50/50 p-5 shadow-sm">
-                <div className="flex gap-4">
-                  <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400">
-                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <p className="text-[15px] font-medium text-slate-700 dark:text-slate-200 leading-relaxed">
-                    {result.patient_summary}
-                  </p>
-                </div>
-              </div>
-            )}
-            
             <div className="flex flex-col items-center gap-2 text-center">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Estimated CKD risk
@@ -761,7 +712,14 @@ function ScreeningContent() {
               <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${band.badgeClass}`}>
                 {band.label}
               </span>
+              <p className="max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">{riskGuidance(percent)}</p>
             </div>
+
+            {result.patient_summary && (
+              <div className="mt-6 rounded-xl border border-sky-100 bg-sky-50/50 p-5 shadow-sm dark:border-sky-900 dark:bg-sky-950/20">
+                <p className="text-[15px] font-medium leading-relaxed text-slate-700 dark:text-slate-200">{result.patient_summary}</p>
+              </div>
+            )}
 
             <div className="mt-6">
               <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
@@ -781,42 +739,18 @@ function ScreeningContent() {
               </p>
             </div>
 
-            {/* Explanation Confidence card - the trust/consistency layer */}
-            <div className={`mt-6 rounded-xl border p-4 ${trust.badgeClass}`}>
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{trust.icon}</span>
-                <p className="text-sm font-semibold">Explanation Confidence</p>
-              </div>
-              <p className="mt-1 text-sm">{trust.label}</p>
-            </div>
-
-            {/* Boundary Proximity */}
-            {result.boundary?.near_boundary && (
-              <div className="mt-4 rounded-xl border bg-amber-50 dark:bg-amber-900/30 p-4 text-amber-900 dark:text-amber-300 border-amber-200 dark:border-amber-800">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">⚠</span>
-                  <p className="text-sm font-semibold">Near risk-category boundary</p>
-                </div>
-                <p className="mt-1 text-sm text-amber-800 dark:text-amber-300">
-                  Your result is close to a different risk category — small changes could shift the outcome. Worth confirming with a follow-up test.
-                </p>
-              </div>
-            )}
-
-            <div className="mt-6">
-              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Top contributing factors</h3>
-              <ol className="mt-3 flex flex-col gap-2">
-                {result.top_factors.map((factor, index) => (
-                  <li
-                    key={factor.feature}
-                    className="flex items-start gap-3 rounded-lg bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-700 dark:text-slate-200"
-                  >
-                    <span className="font-semibold text-sky-700 dark:text-sky-400">{index + 1}.</span>
-                    <span>{factorSentence(factor)}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
+            <FactorsExplainer
+              topFactors={result.top_factors}
+              inputs={form}
+              percent={percent}
+              riskLabel={band.label}
+              trustStability={result.trust.stability}
+              trustSwing={result.trust.swing}
+              trustMessage={result.trust.message}
+              boundaryNear={!!result.boundary?.near_boundary}
+              boundaryMessage={result.boundary?.message}
+              isDoctor={userRole === "doctor"}
+            />
           </div>
         ) : null}
           </div>
