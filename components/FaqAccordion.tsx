@@ -13,7 +13,7 @@ export default function FaqAccordion() {
   return (
     <div className="flex flex-col gap-4">
       {faqs.map((faq, i) => (
-        <details key={i} className="group rounded-2xl border border-slate-200 bg-white p-6 open:bg-sky-50/50">
+        <details key={i} className="group rounded-2xl border border-slate-300 bg-white p-6 shadow-sm open:bg-sky-50/50">
           <summary className="flex cursor-pointer items-center justify-between font-semibold text-slate-900 marker:content-none">
             {faq.q}
             <span className="text-slate-400 transition group-open:rotate-180">

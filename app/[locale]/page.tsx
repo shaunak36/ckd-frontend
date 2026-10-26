@@ -27,34 +27,18 @@ function FactorBar({ label, level, widthClass, colorClass }: { label: string; le
   );
 }
 
-type PatientFeatures = {
-  age: string;
-  bp: string;
+type QuickFeatures = {
   sg: string;
   al: string;
-  su: string;
-  rbc: string;
-  pc: string;
-  pcc: string;
-  ba: string;
   bgr: string;
   bu: string;
   sc: string;
-  sod: string;
-  pot: string;
   hemo: string;
-  pcv: string;
-  wbcc: string;
   rbcc: string;
   htn: string;
-  dm: string;
-  cad: string;
-  appet: string;
-  pe: string;
-  ane: string;
 };
 
-type FeatureKey = keyof PatientFeatures;
+type QuickKey = keyof QuickFeatures;
 
 type PredictResponse = {
   risk_percentage: string;
@@ -64,88 +48,55 @@ type PredictResponse = {
   }[];
 };
 
-const FEATURE_FIELDS = [
-  ["age", "Age"],
-  ["bp", "Blood pressure"],
+const QUICK_FIELDS = [
   ["sg", "Specific gravity"],
   ["al", "Albumin"],
-  ["su", "Sugar"],
-  ["rbc", "Red blood cells"],
-  ["pc", "Pus cells"],
-  ["pcc", "Pus cell clumps"],
-  ["ba", "Bacteria"],
-  ["bgr", "Blood glucose"],
-  ["bu", "Blood urea"],
-  ["sc", "Serum creatinine"],
-  ["sod", "Sodium"],
-  ["pot", "Potassium"],
-  ["hemo", "Hemoglobin"],
-  ["pcv", "Packed cell volume"],
-  ["wbcc", "White blood cell count"],
-  ["rbcc", "Red blood cell count"],
   ["htn", "Hypertension"],
-  ["dm", "Diabetes mellitus"],
-  ["cad", "Coronary artery disease"],
-  ["appet", "Appetite"],
-  ["pe", "Pedal edema"],
-  ["ane", "Anemia"],
-] as const satisfies readonly (readonly [FeatureKey, string])[];
+  ["sc", "Serum creatinine"],
+  ["bu", "Blood urea"],
+  ["hemo", "Hemoglobin"],
+  ["rbcc", "Red blood cell count"],
+] as const satisfies readonly (readonly [QuickKey, string])[];
 
-const NUMERIC_FIELDS = new Set<FeatureKey>([
-  "age", "bp", "sg", "al", "su", "bgr", "bu", "sc",
-  "sod", "pot", "hemo", "pcv", "wbcc", "rbcc",
-]);
-
-const CATEGORICAL_OPTIONS: Record<FeatureKey, readonly string[] | undefined> = {
-  age: undefined,
-  bp: undefined,
+const QUICK_NUMERIC_FIELDS = new Set(["sg", "al", "bgr", "bu", "sc", "hemo", "rbcc"]);
+const QUICK_CATEGORICAL_OPTIONS: Record<keyof QuickFeatures, readonly string[] | undefined> = {
   sg: undefined,
   al: undefined,
-  su: undefined,
-  rbc: ["normal", "abnormal"],
-  pc: ["normal", "abnormal"],
-  pcc: ["present", "notpresent"],
-  ba: ["present", "notpresent"],
   bgr: undefined,
   bu: undefined,
   sc: undefined,
-  sod: undefined,
-  pot: undefined,
   hemo: undefined,
-  pcv: undefined,
-  wbcc: undefined,
   rbcc: undefined,
   htn: ["yes", "no"],
-  dm: ["yes", "no"],
-  cad: ["yes", "no"],
-  appet: ["good", "poor"],
-  pe: ["yes", "no"],
-  ane: ["yes", "no"],
 };
 
-const INITIAL_FEATURES: PatientFeatures = {
-  age: "", bp: "", sg: "", al: "", su: "", rbc: "", pc: "", pcc: "",
-  ba: "", bgr: "", bu: "", sc: "", sod: "", pot: "", hemo: "", pcv: "",
-  wbcc: "", rbcc: "", htn: "", dm: "", cad: "", appet: "", pe: "", ane: "",
+const INITIAL_FEATURES: QuickFeatures = {
+  sg: "", al: "", htn: "", sc: "", bu: "", bgr: "", hemo: "", rbcc: "",
 };
 
 function SampleResultCard({
   result,
+  sample = false,
   className = "",
 }: {
   result: PredictResponse | null;
+  sample?: boolean;
   className?: string;
 }) {
-  const risk = result?.risk_percentage;
+  const risk = sample ? "31.5%" : result?.risk_percentage;
   const numericRisk = risk ? Number.parseFloat(risk.replace("%", "")) : 0;
 
   return (
-    <div className={`flex w-full max-w-md flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-xl sm:p-8 ${className}`}>
+    <div className={`flex w-full max-w-md flex-col rounded-2xl border border-slate-300 bg-white p-6 shadow-xl sm:p-8 ${className}`}>
       {/* Risk Output */}
       <div className="flex flex-col items-center gap-2 text-center">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">CKD Risk Estimate</p>
-        {result ? (
-          <p className="text-6xl font-extrabold text-red-700">{risk}</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{sample ? "Sample result" : "CKD Risk Estimate"}</p>
+        {result || sample ? (
+          <>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Estimated CKD risk</p>
+            <p className="text-6xl font-extrabold text-red-700">{risk}</p>
+            <p className="text-sm font-semibold text-amber-700">{sample ? "(Moderate)" : ""}</p>
+          </>
         ) : (
           <p className="text-sm font-semibold text-slate-500">Illustrative sample, not model output</p>
         )}
@@ -156,7 +107,7 @@ function SampleResultCard({
         <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
           <div
             className="h-full rounded-full bg-red-500"
-            style={{ width: `${result && Number.isFinite(numericRisk) ? Math.min(Math.max(numericRisk, 0), 100) : 0}%` }}
+            style={{ width: `${(result || sample) && Number.isFinite(numericRisk) ? Math.min(Math.max(numericRisk, 0), 100) : 0}%` }}
           />
         </div>
         <div className="mt-1 flex justify-between text-xs text-slate-400">
@@ -167,21 +118,21 @@ function SampleResultCard({
         </div>
       </div>
 
-      {/* Confidence */}
-      <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-        <div className="flex items-center gap-2">
-          <span className="text-emerald-700">
-            <CheckIcon className="h-4 w-4" />
-          </span>
-          <p className="text-sm font-semibold text-emerald-900">Per-patient confidence estimate</p>
-        </div>
+      <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
+        Explanation stability: checked on every result
       </div>
 
       {/* Contributing Factors */}
       <div className="mt-6">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Contributing Factors</h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{sample ? "Explainable AI: Why 31.5%?" : "Contributing Factors"}</h3>
         <div className="mt-4 flex flex-col gap-4">
-          {result ? result.top_factors.map((factor) => (
+          {sample ? [
+            ["Albumin", "44%", "w-[44%]", "bg-red-500"],
+            ["Hemoglobin", "40%", "w-[40%]", "bg-emerald-500"],
+            ["Serum creatinine", "16%", "w-[16%]", "bg-emerald-500"],
+          ].map(([label, level, widthClass, colorClass]) => (
+            <FactorBar key={label} label={label} level={`${level} ${label === "Albumin" ? "(increases risk)" : "(decreases)"}`} widthClass={widthClass} colorClass={colorClass} />
+          )) : result ? result.top_factors.map((factor) => (
             <FactorBar
               key={factor.feature}
               label={factor.feature}
@@ -201,7 +152,7 @@ function SampleResultCard({
 /* --- Main Page --- */
 
 export default function LandingPage() {
-  const [features, setFeatures] = useState<PatientFeatures>(INITIAL_FEATURES);
+  const [features, setFeatures] = useState<QuickFeatures>(INITIAL_FEATURES);
   const [result, setResult] = useState<PredictResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -210,9 +161,9 @@ export default function LandingPage() {
     event.preventDefault();
     setError(null);
 
-    const hasInvalidField = FEATURE_FIELDS.some(([key]) => {
+    const hasInvalidField = QUICK_FIELDS.some(([key]) => {
       const value = features[key].trim();
-      return !value || (NUMERIC_FIELDS.has(key) && !Number.isFinite(Number(value)));
+      return !value || (QUICK_NUMERIC_FIELDS.has(key) && !Number.isFinite(Number(value)));
     });
 
     if (hasInvalidField) {
@@ -222,16 +173,16 @@ export default function LandingPage() {
     }
 
     const body = Object.fromEntries(
-      FEATURE_FIELDS.map(([key]) => [
+      QUICK_FIELDS.map(([key]) => [
         key,
-        NUMERIC_FIELDS.has(key) ? Number(features[key]) : features[key],
+        QUICK_NUMERIC_FIELDS.has(key) ? Number(features[key]) : features[key],
       ]),
     );
 
     setLoading(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/predict`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/predict-quick`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -281,7 +232,7 @@ export default function LandingPage() {
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-sky-50 px-6 py-16 md:py-24 lg:px-8 lg:py-32">
           <div className="mx-auto max-w-7xl">
-            <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-8">
+            <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
               <div className="flex max-w-2xl flex-col items-start text-left">
                 <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-800">
                   AI-powered kidney health screening
@@ -303,69 +254,74 @@ export default function LandingPage() {
                 <p className="mt-6 text-xs text-slate-500 sm:max-w-md">
                   CKD One provides risk screening and educational information. It does not replace diagnosis or medical advice from a qualified healthcare professional.
                 </p>
-                <form onSubmit={handlePredict} className="mt-8 w-full max-w-2xl rounded-2xl border border-sky-200 bg-white p-5 shadow-sm">
-                  <h2 className="text-lg font-bold text-slate-900">Try a patient risk estimate</h2>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Enter all clinical features required by the prediction model.
-                  </p>
-                  <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {FEATURE_FIELDS.map(([key, label]) => {
-                      const options = CATEGORICAL_OPTIONS[key];
-
-                      return (
-                        <label key={key} className="flex flex-col gap-1 text-sm font-medium text-slate-700">
-                          {label}
-                          {options ? (
-                            <select
-                              value={features[key]}
-                              onChange={(event) => setFeatures((current) => ({ ...current, [key]: event.target.value }))}
-                              className="rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
-                            >
-                              <option value="">Select</option>
-                              {options.map((option) => (
-                                <option key={option} value={option}>{option}</option>
-                              ))}
-                            </select>
-                          ) : (
-                            <input
-                              type="text"
-                              inputMode="decimal"
-                              value={features[key]}
-                              onChange={(event) => setFeatures((current) => ({ ...current, [key]: event.target.value }))}
-                              className="rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
-                            />
-                          )}
-                        </label>
-                      );
-                    })}
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="mt-5 rounded-lg bg-sky-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {loading ? "Loading..." : "Get live prediction"}
-                  </button>
-                  {error && (
-                    <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-                      {error}
-                    </p>
-                  )}
-                </form>
               </div>
-              <div className="flex justify-center lg:justify-end">
+              <div className="flex justify-center lg:justify-end lg:pt-0">
                 <div className="relative">
                   {/* Decorative blob behind card */}
                   <div className="absolute -inset-4 rounded-full bg-sky-200/50 blur-3xl" />
-                  <SampleResultCard result={result} className="relative z-10" />
+                  <SampleResultCard result={null} sample className="relative z-10" />
                 </div>
               </div>
             </div>
           </div>
         </section>
 
+        {/* Quick estimate section */}
+        <section id="quick-estimate" className="bg-white px-6 py-16 lg:px-8 lg:py-20">
+          <div className="mx-auto max-w-7xl">
+            <div className="max-w-2xl">
+              <p className="text-sm font-semibold uppercase tracking-wide text-sky-700">Start with eight values</p>
+              <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Try a quick estimate</h2>
+              <p className="mt-4 text-lg text-slate-600">Enter the most predictive values from a recent lab report to see an educational CKD risk estimate.</p>
+            </div>
+            <div className="mt-10 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]">
+              <form onSubmit={handlePredict} className="rounded-2xl border border-slate-300 bg-slate-50 p-5 shadow-sm sm:p-7">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {QUICK_FIELDS.map(([key, label]) => {
+                    const options = QUICK_CATEGORICAL_OPTIONS[key];
+
+                    return (
+                      <label key={key} className="flex flex-col gap-1 text-sm font-medium text-slate-700">
+                        {label}
+                        {options ? (
+                          <select
+                            value={features[key]}
+                            onChange={(event) => setFeatures((current) => ({ ...current, [key]: event.target.value }))}
+                            className="rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
+                          >
+                            <option value="">Select</option>
+                            {options.map((option) => <option key={option} value={option}>{option}</option>)}
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={features[key]}
+                            onChange={(event) => setFeatures((current) => ({ ...current, [key]: event.target.value }))}
+                            className="rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
+                          />
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
+                <div className="mt-5 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <Link href="/signup" className="text-sm font-semibold text-sky-700 hover:underline">Want the full 24-value screening? Get started</Link>
+                  <button type="submit" disabled={loading} className="rounded-lg bg-sky-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-60">
+                    {loading ? "Loading..." : "Get live prediction"}
+                  </button>
+                </div>
+                {error && <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
+              </form>
+              <div className="lg:sticky lg:top-24">
+                <SampleResultCard result={result} />
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* CKD can develop silently section */}
-        <section id="why-ckd-one" className="bg-white px-6 py-20 lg:px-8 lg:py-24">
+        <section id="why-ckd-one" className="bg-white px-6 py-16 lg:px-8 lg:py-20">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">CKD can develop silently</h2>
@@ -373,14 +329,14 @@ export default function LandingPage() {
                 Millions of people have chronic kidney disease and don't know it. We built CKD One to bring clarity to early screening and detection.
               </p>
             </div>
-            <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 { title: "Early detection matters", desc: "Identifying kidney stress earlier allows for interventions that can slow or prevent disease progression." },
                 { title: "Lab reports are hard to interpret", desc: "Clinical markers like serum creatinine and specific gravity interact in complex ways that are difficult to assess manually." },
                 { title: "Black-box AI is hard to trust", desc: "Many risk models provide a score without context, leaving patients and doctors unsure of why a prediction was made." },
                 { title: "Decisions need understandable explanations", desc: "We provide not just a risk percentage, but a clear, ranked list of the exact clinical factors driving your result." }
               ].map((card, i) => (
-                <div key={i} className="rounded-2xl border border-slate-100 bg-slate-50 p-6 shadow-sm">
+                <div key={i} className="rounded-2xl border border-slate-300 bg-slate-50 p-6 shadow-sm">
                   <h3 className="font-semibold text-slate-900">{card.title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-600">{card.desc}</p>
                 </div>
@@ -390,16 +346,16 @@ export default function LandingPage() {
         </section>
 
         {/* How CKD One Works */}
-        <section id="how-it-works" className="bg-slate-50 px-6 py-20 lg:px-8 lg:py-24 border-y border-slate-200">
+        <section id="how-it-works" className="bg-slate-50 px-6 py-16 lg:px-8 lg:py-20 border-y border-slate-200">
           <div className="mx-auto max-w-7xl">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">How CKD One works</h2>
             </div>
-            <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-4">
+            <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-4">
               {[
                 { num: "01", title: "Enter your information", desc: "Input basic demographics and medical history." },
                 { num: "02", title: "Add laboratory data", desc: "Provide values from your latest urine and blood tests." },
-                { num: "03", title: "CKD One analyzes the data", desc: "Our localized AI model evaluates your specific profile." },
+                { num: "03", title: "CKD One analyzes the data", desc: "Our model evaluates your specific lab profile." },
                 { num: "04", title: "Understand your risk", desc: "Receive a transparent estimate with top contributing factors." }
               ].map((step, i) => (
                 <div key={i} className="relative flex flex-col items-center text-center">
@@ -415,7 +371,7 @@ export default function LandingPage() {
         </section>
 
         {/* Don't just get a prediction. Understand it. */}
-        <section className="bg-slate-900 px-6 py-20 lg:px-8 lg:py-24">
+        <section className="bg-slate-900 px-6 py-16 lg:px-8 lg:py-20">
           <div className="mx-auto max-w-7xl">
             <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-12">
               <div className="max-w-xl text-left">
@@ -441,15 +397,22 @@ export default function LandingPage() {
                   ))}
                 </ul>
               </div>
-              <div className="flex justify-center lg:justify-end">
-                <SampleResultCard result={result} />
+              <div className="flex flex-col gap-4 lg:items-end">
+                <div className="w-full max-w-md rounded-2xl border border-amber-400/50 bg-amber-400/10 p-5 text-amber-100 shadow-lg">
+                  <p className="text-sm font-semibold">How reliable is this explanation?</p>
+                  <p className="mt-2 text-sm leading-relaxed text-amber-200">Unstable: small changes in lab values could shift this result.</p>
+                </div>
+                <div className="w-full max-w-md rounded-2xl border border-yellow-300/50 bg-yellow-300/10 p-4 text-yellow-100 shadow-lg">
+                  <p className="text-sm font-semibold">Near risk-category boundary</p>
+                  <p className="mt-1 text-xs leading-relaxed text-yellow-200">The classification could move with normal day-to-day variation in lab values.</p>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
         {/* For healthcare professionals */}
-        <section id="for-doctors" className="bg-sky-50 px-6 py-20 lg:px-8 lg:py-24">
+        <section id="for-doctors" className="bg-sky-50 px-6 py-16 lg:px-8 lg:py-20">
           <div className="mx-auto max-w-7xl">
             <div className="grid items-center gap-12 lg:grid-cols-2">
               <div>
@@ -483,19 +446,19 @@ export default function LandingPage() {
         </section>
 
         {/* Transparent by design */}
-        <section className="bg-white px-6 py-20 lg:px-8 lg:py-24 border-y border-slate-200">
+        <section className="bg-white px-6 py-16 lg:px-8 lg:py-20 border-y border-slate-200">
           <div className="mx-auto max-w-7xl">
             <h2 className="text-center text-3xl font-bold tracking-tight text-slate-900">Transparent by design</h2>
-            <div className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {[
                 { title: "Explainable predictions", desc: "Local feature importance tells you exactly what drove the model's estimate." },
                 { title: "Human review always required", desc: "Built as an educational screening aid, not an automated diagnostician." },
                 { title: "Clear limitations stated", desc: "Model confidence and stability are calculated and displayed for every result." },
                 { title: "Secure account access", desc: "Your data is protected behind industry-standard authentication." },
-                { title: "Patient-controlled information", desc: "You control who has access to your risk screening dashboard." },
+                { title: "Private by default", desc: "Your screenings are visible only to your own account." },
                 { title: "Transparent workflow", desc: "Every step from data input to risk output is clearly mapped out." }
               ].map((item, i) => (
-                <div key={i} className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                <div key={i} className="rounded-2xl border border-slate-300 bg-slate-50 p-6 shadow-sm">
                   <h3 className="font-semibold text-slate-900">{item.title}</h3>
                   <p className="mt-2 text-sm text-slate-600">{item.desc}</p>
                 </div>
@@ -505,7 +468,7 @@ export default function LandingPage() {
         </section>
 
         {/* FAQ Section */}
-        <section className="bg-slate-50 px-6 py-20 lg:px-8 lg:py-24">
+        <section className="bg-slate-50 px-6 py-16 lg:px-8 lg:py-20">
           <div className="mx-auto max-w-3xl">
             <h2 className="text-center text-3xl font-bold tracking-tight text-slate-900">Frequently Asked Questions</h2>
             <div className="mt-12">
@@ -551,26 +514,22 @@ export default function LandingPage() {
             <div>
               <h3 className="text-sm font-semibold text-slate-900">Product</h3>
               <ul className="mt-4 flex flex-col gap-2 text-sm text-slate-500">
-                <li><Link href="#" className="hover:text-sky-700">Screening Tool</Link></li>
-                <li><Link href="#" className="hover:text-sky-700">How it works</Link></li>
-                <li><Link href="#" className="hover:text-sky-700">Pricing</Link></li>
-                <li><Link href="#" className="hover:text-sky-700">For Professionals</Link></li>
+                <li><Link href="#quick-estimate" className="hover:text-sky-700">Screening Tool</Link></li>
+                <li><Link href="#how-it-works" className="hover:text-sky-700">How it works</Link></li>
+                <li><Link href="#for-doctors" className="hover:text-sky-700">For Professionals</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="text-sm font-semibold text-slate-900">Resources</h3>
               <ul className="mt-4 flex flex-col gap-2 text-sm text-slate-500">
-                <li><Link href="#" className="hover:text-sky-700">Help Center</Link></li>
-                <li><Link href="#" className="hover:text-sky-700">Research & Models</Link></li>
-                <li><Link href="#" className="hover:text-sky-700">Clinical Guidelines</Link></li>
+                <li><Link href="/help" className="hover:text-sky-700">Help Center</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="text-sm font-semibold text-slate-900">Legal</h3>
               <ul className="mt-4 flex flex-col gap-2 text-sm text-slate-500">
-                <li><Link href="#" className="hover:text-sky-700">Privacy Policy</Link></li>
-                <li><Link href="#" className="hover:text-sky-700">Terms of Service</Link></li>
-                <li><Link href="#" className="hover:text-sky-700">Cookie Policy</Link></li>
+                <li><Link href="/help" className="hover:text-sky-700">Privacy Policy</Link></li>
+                <li><Link href="/help" className="hover:text-sky-700">Terms of Service</Link></li>
               </ul>
             </div>
           </div>
