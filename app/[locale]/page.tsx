@@ -2,6 +2,12 @@
 import React, { useState } from "react";
 import { Link } from "@/i18n/routing";
 import FaqAccordion from "@/components/FaqAccordion";
+import {
+  QUICK_ALBUMIN_OPTIONS,
+  QUICK_HYPERTENSION_OPTIONS,
+  QUICK_NUMERIC_FIELDS,
+  QUICK_SPECIFIC_GRAVITY_OPTIONS,
+} from "@/lib/quickScreen";
 
 /* --- Components --- */
 
@@ -27,6 +33,17 @@ function FactorBar({ label, level, widthClass, colorClass }: { label: string; le
   );
 }
 
+const QUICK_FACTOR_LABELS: Record<string, string> = {
+  sg: "Specific gravity",
+  hemo: "Hemoglobin",
+  al: "Albumin",
+  sc: "Serum creatinine",
+  bu: "Blood urea",
+  rbcc: "Red blood cell count",
+  bgr: "Blood glucose",
+  htn: "Hypertension",
+};
+
 type QuickFeatures = {
   sg: string;
   al: string;
@@ -45,41 +62,39 @@ type PredictResponse = {
   top_factors: {
     feature: string;
     direction: string;
+    impact: number;
   }[];
+  trust?: {
+    stability: string;
+    swing: number;
+  };
 };
 
 const QUICK_FIELDS = [
   ["sg", "Specific gravity"],
   ["al", "Albumin"],
   ["htn", "Hypertension"],
-  ["sc", "Serum creatinine"],
-  ["bu", "Blood urea"],
-  ["hemo", "Hemoglobin"],
-  ["rbcc", "Red blood cell count"],
+  ["sc", "Serum creatinine (mg/dL)"],
+  ["bu", "Blood urea (mg/dL)"],
+  ["hemo", "Hemoglobin (g/dL)"],
+  ["rbcc", "Red blood cell count (millions/cmm)"],
+  ["bgr", "Blood glucose, random (mg/dL)"],
 ] as const satisfies readonly (readonly [QuickKey, string])[];
 
-const QUICK_NUMERIC_FIELDS = new Set(["sg", "al", "bgr", "bu", "sc", "hemo", "rbcc"]);
-const QUICK_CATEGORICAL_OPTIONS: Record<keyof QuickFeatures, readonly string[] | undefined> = {
-  sg: undefined,
-  al: undefined,
-  bgr: undefined,
-  bu: undefined,
-  sc: undefined,
-  hemo: undefined,
-  rbcc: undefined,
-  htn: ["yes", "no"],
-};
+const QUICK_NUMERIC_FIELD_SET = new Set<string>(QUICK_NUMERIC_FIELDS);
 
 const INITIAL_FEATURES: QuickFeatures = {
-  sg: "", al: "", htn: "", sc: "", bu: "", bgr: "", hemo: "", rbcc: "",
+  sg: "", al: "", htn: "", sc: "", bu: "", hemo: "", rbcc: "", bgr: "",
 };
 
 function SampleResultCard({
   result,
+  features,
   sample = false,
   className = "",
 }: {
   result: PredictResponse | null;
+  features?: QuickFeatures;
   sample?: boolean;
   className?: string;
 }) {
@@ -119,7 +134,11 @@ function SampleResultCard({
       </div>
 
       <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
-        Explanation stability: checked on every result
+        {result?.trust ? (
+          <>Explanation stability: {result.trust.stability} · swing {(result.trust.swing * 100).toFixed(1)}%</>
+        ) : (
+          "Explanation stability: checked on every result"
+        )}
       </div>
 
       {/* Contributing Factors */}
@@ -132,15 +151,29 @@ function SampleResultCard({
             ["Serum creatinine", "16%", "w-[16%]", "bg-emerald-500"],
           ].map(([label, level, widthClass, colorClass]) => (
             <FactorBar key={label} label={label} level={`${level} ${label === "Albumin" ? "(increases risk)" : "(decreases)"}`} widthClass={widthClass} colorClass={colorClass} />
-          )) : result ? result.top_factors.map((factor) => (
-            <FactorBar
-              key={factor.feature}
-              label={factor.feature}
-              level={factor.direction}
-              widthClass="w-full"
-              colorClass="bg-sky-500"
-            />
-          )) : (
+          )) : result ? (() => {
+            const factors = result.top_factors || [];
+            const largestImpact = Math.max(...factors.map((factor) => Math.abs(factor.impact)), 0);
+            return factors.map((factor) => {
+              const value = features?.[factor.feature as QuickKey] ?? "—";
+              const width = largestImpact > 0 ? (Math.abs(factor.impact) / largestImpact) * 100 : 0;
+              const increasesRisk = factor.direction.toLowerCase().includes("increase");
+              return (
+                <div key={factor.feature} className="flex flex-col gap-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="font-medium text-slate-700">{QUICK_FACTOR_LABELS[factor.feature] || factor.feature}</span>
+                    <span className="text-xs font-semibold text-slate-500">{value}</span>
+                  </div>
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className={`h-full rounded-full ${increasesRisk ? "bg-red-500" : "bg-emerald-500"}`}
+                      style={{ width: `${width}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            });
+          })() : (
             <p className="text-sm text-slate-500">Submit patient features to see model factors.</p>
           )}
         </div>
@@ -163,7 +196,7 @@ export default function LandingPage() {
 
     const hasInvalidField = QUICK_FIELDS.some(([key]) => {
       const value = features[key].trim();
-      return !value || (QUICK_NUMERIC_FIELDS.has(key) && !Number.isFinite(Number(value)));
+      return !value || (QUICK_NUMERIC_FIELD_SET.has(key) && !Number.isFinite(Number(value)));
     });
 
     if (hasInvalidField) {
@@ -175,7 +208,7 @@ export default function LandingPage() {
     const body = Object.fromEntries(
       QUICK_FIELDS.map(([key]) => [
         key,
-        QUICK_NUMERIC_FIELDS.has(key) ? Number(features[key]) : features[key],
+        QUICK_NUMERIC_FIELD_SET.has(key) ? Number(features[key]) : features[key],
       ]),
     );
 
@@ -189,7 +222,18 @@ export default function LandingPage() {
       });
 
       if (!response.ok) {
-        throw new Error(`Prediction request failed (${response.status})`);
+        let detail = "";
+        try {
+          const errorBody = await response.json();
+          detail = typeof errorBody.detail === "string"
+            ? errorBody.detail
+            : Array.isArray(errorBody.detail)
+              ? errorBody.detail.map((item: { msg?: string }) => item.msg || "Invalid value").join(", ")
+              : "";
+        } catch {
+          detail = "";
+        }
+        throw new Error(detail || "The prediction service could not validate those values. Please check the form and try again.");
       }
 
       setResult((await response.json()) as PredictResponse);
@@ -278,7 +322,13 @@ export default function LandingPage() {
               <form onSubmit={handlePredict} className="rounded-2xl border border-slate-300 bg-slate-50 p-5 shadow-sm sm:p-7">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {QUICK_FIELDS.map(([key, label]) => {
-                    const options = QUICK_CATEGORICAL_OPTIONS[key];
+                    const options: readonly { value: string; label: string }[] | undefined = key === "sg"
+                      ? QUICK_SPECIFIC_GRAVITY_OPTIONS
+                      : key === "al"
+                        ? QUICK_ALBUMIN_OPTIONS
+                        : key === "htn"
+                          ? QUICK_HYPERTENSION_OPTIONS
+                          : undefined;
 
                     return (
                       <label key={key} className="flex flex-col gap-1 text-sm font-medium text-slate-700">
@@ -290,12 +340,19 @@ export default function LandingPage() {
                             className="rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
                           >
                             <option value="">Select</option>
-                            {options.map((option) => <option key={option} value={option}>{option}</option>)}
+                            {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                           </select>
                         ) : (
                           <input
-                            type="text"
+                            type="number"
                             inputMode="decimal"
+                            placeholder={
+                              key === "sc" ? "e.g. 1.2"
+                                : key === "bu" ? "e.g. 40"
+                                  : key === "hemo" ? "e.g. 12.5"
+                                    : key === "rbcc" ? "e.g. 4.5"
+                                      : "e.g. 120"
+                            }
                             value={features[key]}
                             onChange={(event) => setFeatures((current) => ({ ...current, [key]: event.target.value }))}
                             className="rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
@@ -307,14 +364,18 @@ export default function LandingPage() {
                 </div>
                 <div className="mt-5 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <Link href="/signup" className="text-sm font-semibold text-sky-700 hover:underline">Want the full 24-value screening? Get started</Link>
-                  <button type="submit" disabled={loading} className="rounded-lg bg-sky-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-60">
+                  <button
+                    type="submit"
+                    disabled={loading || QUICK_FIELDS.some(([key]) => !features[key].trim())}
+                    className="rounded-lg bg-sky-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
                     {loading ? "Loading..." : "Get live prediction"}
                   </button>
                 </div>
                 {error && <p role="alert" className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
               </form>
               <div className="lg:sticky lg:top-24">
-                <SampleResultCard result={result} />
+                <SampleResultCard result={result} features={features} />
               </div>
             </div>
           </div>

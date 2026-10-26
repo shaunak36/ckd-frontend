@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState, useEffect } from "react";
+import { FormEvent, useState, useEffect, useRef } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
@@ -10,6 +10,12 @@ import AuthGuard from "@/components/AuthGuard";
 import { supabase } from "@/lib/supabaseClient";
 import { ScreeningOverlay, UploadLoader } from "@/components/ScreeningLoader";
 import FactorsExplainer from "@/components/FactorsExplainer";
+import ReactMarkdown from "react-markdown";
+import {
+  QUICK_ALBUMIN_OPTIONS,
+  QUICK_HYPERTENSION_OPTIONS,
+  QUICK_SPECIFIC_GRAVITY_OPTIONS,
+} from "@/lib/quickScreen";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/predict`;
 
@@ -38,6 +44,7 @@ type TrustResult = {
 };
 
 type PredictResponse = {
+  id: string;
   risk_score: number;
   risk_percentage: string;
   top_factors: TopFactor[];
@@ -249,8 +256,15 @@ function ScreeningContent() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [result, setResult] = useState<PredictResponse | null>(null);
+  const [resultId, setResultId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [messages, setMessages] = useState<{ role: "user" | "assistant"; text: string }[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const chatInputRef = useRef<HTMLInputElement>(null);
+  const chatPanelRef = useRef<HTMLDivElement>(null);
 
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -330,6 +344,10 @@ function ScreeningContent() {
     setLoading(true);
     setError(null);
     setResult(null);
+    setResultId(null);
+    setMessages([]);
+    setChatInput("");
+    setChatError(null);
 
     const numericKeys: NumericKey[] = [
       "age", "bp", "sg", "al", "su", "bgr", "bu", "sc",
@@ -338,13 +356,13 @@ function ScreeningContent() {
 
     const { data: { user } } = await supabase.auth.getUser();
 
-    const QUICK_KEYS = new Set(["hemo", "sg", "al", "htn", "sc", "bu", "bgr", "rbcc"]);
+    const QUICK_KEYS = new Set(["hemo", "sg", "al", "htn", "sc", "bu", "rbcc", "bgr"]);
 
     const payload: Record<string, any> = {};
     if (screenMode === "quick") {
       for (const [k, v] of Object.entries(form)) {
         if (QUICK_KEYS.has(k)) {
-          payload[k] = numericKeys.includes(k as NumericKey) ? Number.parseFloat(v as string) : v;
+          payload[k] = k === "htn" ? v : Number.parseFloat(v as string);
         }
       }
     } else {
@@ -373,7 +391,11 @@ function ScreeningContent() {
       }
 
       const data: PredictResponse = await response.json();
+      if (!data.id) {
+        throw new Error("Prediction service did not return the saved record ID.");
+      }
       setResult(data);
+      setResultId(data.id);
     } catch (err) {
       setError(
         err instanceof Error
@@ -382,6 +404,56 @@ function ScreeningContent() {
       );
     } finally {
       setLoading(false);
+    }
+  }
+
+  function scrollToChat() {
+    chatPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(() => chatInputRef.current?.focus(), 100);
+  }
+
+  async function sendChatQuestion(question: string) {
+    if (!question || !resultId) return;
+    if (chatLoading || messages.some((message) => message.role === "user" && message.text === question)) {
+      scrollToChat();
+      return;
+    }
+
+    setChatInput("");
+    setChatError(null);
+    setMessages((prev) => [...prev, { role: "user", text: question }]);
+    setChatLoading(true);
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ patient_id: resultId, question }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Request failed");
+      }
+
+      const data = await response.json();
+      const answer = data.answer || data.response || data.message || "No response provided.";
+      setMessages((prev) => [...prev, { role: "assistant", text: answer }]);
+    } catch {
+      setChatError("Failed to send message. Please try again.");
+    } finally {
+      setChatLoading(false);
+    }
+  }
+
+  async function handleSendChat(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await sendChatQuestion(chatInput.trim());
+  }
+
+  function handleAskWhy() {
+    scrollToChat();
+    if (result && resultId && messages.length === 0) {
+      void sendChatQuestion(`Why is my risk ${percent.toFixed(1)}%?`);
     }
   }
 
@@ -653,7 +725,7 @@ function ScreeningContent() {
           </div>
 
           {SECTIONS.map((section) => {
-            const QUICK_KEYS = new Set(["hemo", "sg", "al", "htn", "sc", "bu", "bgr", "rbcc"]);
+            const QUICK_KEYS = new Set(["hemo", "sg", "al", "htn", "sc", "bu", "rbcc", "bgr"]);
             const fields = screenMode === "quick"
               ? section.fields.filter((f) => QUICK_KEYS.has(f.key))
               : section.fields;
@@ -669,7 +741,15 @@ function ScreeningContent() {
                   {fields.map((field) => (
                     <FieldControl
                       key={field.key}
-                      field={field}
+                      field={
+                        screenMode === "quick" && field.key === "sg"
+                          ? { ...field, type: "select", options: QUICK_SPECIFIC_GRAVITY_OPTIONS.map((option) => ({ ...option })) }
+                          : screenMode === "quick" && field.key === "al"
+                            ? { ...field, type: "select", options: QUICK_ALBUMIN_OPTIONS.map((option) => ({ ...option })) }
+                            : screenMode === "quick" && field.key === "htn"
+                              ? { ...field, options: QUICK_HYPERTENSION_OPTIONS.map((option) => ({ ...option })) }
+                          : field
+                      }
                       value={form[field.key]}
                       isAutoFilled={autoFilledFields.has(field.key)}
                       onChange={handleChange}
@@ -701,6 +781,7 @@ function ScreeningContent() {
         ) : null}
 
         {result && band ? (
+          <>
           <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
             <div className="flex flex-col items-center gap-2 text-center">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -750,8 +831,66 @@ function ScreeningContent() {
               boundaryNear={!!result.boundary?.near_boundary}
               boundaryMessage={result.boundary?.message}
               isDoctor={userRole === "doctor"}
+              askWhyTargetId="ask-chat-panel"
+              onAskWhy={handleAskWhy}
             />
           </div>
+          <div ref={chatPanelRef} id="ask-chat-panel" className="mt-6 scroll-mt-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">Ask about this result</h2>
+            <div className="mt-4 flex h-80 flex-col gap-3 overflow-y-auto rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4">
+              {messages.length === 0 ? (
+                <p className="m-auto text-sm text-slate-400 dark:text-slate-500">No messages yet. Ask a question below!</p>
+              ) : (
+                messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-relaxed ${
+                      message.role === "user"
+                        ? "self-end bg-sky-600 dark:bg-sky-700 text-white"
+                        : "self-start bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm"
+                    }`}
+                  >
+                    {message.role === "user" ? (
+                      message.text
+                    ) : (
+                      <div className="prose prose-sm prose-slate dark:prose-invert max-w-none">
+                        <ReactMarkdown>{message.text}</ReactMarkdown>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+              {chatLoading && (
+                <div className="max-w-[85%] self-start rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm text-slate-500 dark:text-slate-400 shadow-sm">
+                  Thinking…
+                </div>
+              )}
+            </div>
+
+            <form onSubmit={handleSendChat} className="mt-4 flex gap-2">
+              <input
+                ref={chatInputRef}
+                type="text"
+                value={chatInput}
+                onChange={(event) => setChatInput(event.target.value)}
+                placeholder="E.g. What does specific gravity mean?"
+                className="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm text-slate-800 dark:text-slate-200 shadow-sm outline-none focus:border-sky-500 dark:focus:border-sky-400 focus:ring-1 focus:ring-sky-500 dark:focus:ring-sky-400 disabled:opacity-50"
+                disabled={chatLoading}
+              />
+              <button
+                type="submit"
+                disabled={chatLoading || !chatInput.trim()}
+                className="rounded-lg bg-sky-700 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-800 disabled:opacity-50"
+              >
+                Send
+              </button>
+            </form>
+            {chatError && <p className="mt-2 text-xs text-red-600 dark:text-red-400">{chatError}</p>}
+            <p className="mt-4 text-center text-xs text-slate-500 dark:text-slate-400">
+              This assistant explains your screening result and provides general CKD education. It cannot diagnose or recommend treatment.
+            </p>
+          </div>
+          </>
         ) : null}
           </div>
         </main>
